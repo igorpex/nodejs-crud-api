@@ -2,8 +2,10 @@ import * as http from "http";
 import 'dotenv/config';
 import { Controller } from "./controller.js";
 import { IncomingMessage, ServerResponse } from "http";
-import { validateUuid } from './utils.js';
-import { CustomError } from './controller.js';
+import { getReqData, instanceOfCustomError } from './utils.js';
+
+
+
 
 const PORT: number = Number(process.env.PORT) || 5500;
 
@@ -30,12 +32,35 @@ const server = http.createServer(async (req: IncomingMessage, res: ServerRespons
       const user = await new Controller().getUser(id);
       // set the status code, and content-type
       res.writeHead(200, { "Content-Type": "application/json" });
-      // send the data
+      // send the user data
       res.end(JSON.stringify(user));
 
-    } catch (error: any) {
-      res.writeHead(error.code, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ message: error.message }));
+    } catch (error) {
+      if (instanceOfCustomError(error)) {
+        res.writeHead(error.code, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ message: error.message }));
+      }
+    }
+  }
+
+  // POST api/users
+  else if (req.url === "/api/users" && req.method === "POST") {
+    try {
+      // get the data sent along
+      let user = await getReqData(req);
+      // create the user
+      if (typeof user === "string") {
+        let newUser = await new Controller().createUser(JSON.parse(user));
+        // set the status code and content-type
+        res.writeHead(201, { "Content-Type": "application/json" });
+        //send the user
+        res.end(JSON.stringify(newUser));
+      }
+    } catch (error) {
+      if (instanceOfCustomError(error)) {
+        res.writeHead(error.code, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ message: error.message }));
+      }
     }
   }
 
