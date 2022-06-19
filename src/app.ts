@@ -1,5 +1,6 @@
 import * as http from "http";
-import 'dotenv/config'
+import 'dotenv/config';
+import { users } from "./users.js"
 
 const PORT: number = Number(process.env.PORT) || 5500;
 
@@ -9,8 +10,14 @@ const server = http.createServer(async (req, res) => {
     //response headers
     res.writeHead(200, { "Content-Type": "application/json" });
     //set the response
-    res.write("Hi there, This is a Hello from API");
+    res.write(JSON.stringify({ message: "Hi there, This is a Hello from API" }));
     //end the response
+    res.end();
+  }
+
+  else if (req.url === "/api/users" && req.method === "GET") {
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.write(JSON.stringify(users));
     res.end();
   }
 
@@ -21,5 +28,4 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-
-server.listen(PORT, () => console.log(`Server listening on ${PORT}`))
+server.listen(PORT, () => console.log(`Server listening on ${PORT}`));
