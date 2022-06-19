@@ -90,6 +90,27 @@ const server = http.createServer(async (req: IncomingMessage, res: ServerRespons
     }
   }
 
+  // DELETE api/users/${userId}
+  else if (url.match(/\/api\/users\/.+/) && req.method === "DELETE") {
+    try {
+      // get id from url
+      const matches = url.match(/\/api\/users\/(.+)/);
+      const id = matches![1];
+      // get user
+      const deletedUser = await new Controller().deleteUser(id);
+      // set the status code, and content-type
+      res.writeHead(204, { "Content-Type": "application/json" });
+      // send response
+      res.end();
+
+    } catch (error) {
+      if (instanceOfCustomError(error)) {
+        res.writeHead(error.code, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ message: error.message }));
+      }
+    }
+  }
+
   // If no route present
   else {
     res.writeHead(404, { "Content-Type": "application/json" });
