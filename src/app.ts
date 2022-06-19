@@ -64,6 +64,32 @@ const server = http.createServer(async (req: IncomingMessage, res: ServerRespons
     }
   }
 
+
+  // PUT api/users/{userId}
+
+  else if (url.match(/\/api\/users\/.+/) && req.method === "PUT") {
+    try {
+      // get id from url
+      const matches = url.match(/\/api\/users\/(.+)/);
+      const id = matches![1];
+
+      // get the data sent along
+      let user = await getReqData(req);
+      // update user
+      if (typeof user === "string") {
+        let updatedUser = await new Controller().updateUser(id, JSON.parse(user));
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify(updatedUser));
+      }
+
+    } catch (error) {
+      if (instanceOfCustomError(error)) {
+        res.writeHead(error.code, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ message: error.message }));
+      }
+    }
+  }
+
   // If no route present
   else {
     res.writeHead(404, { "Content-Type": "application/json" });

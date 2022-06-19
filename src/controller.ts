@@ -1,6 +1,7 @@
 import { User, users } from "./users.js";
 import { validateUuid } from './utils.js';
 import { v4 as uuid } from 'uuid';
+import { getReqData, instanceOfCustomError } from './utils.js';
 
 export interface CustomError {
   code: number,
@@ -61,5 +62,42 @@ class Controller {
 
     });
   }
+
+  async updateUser(id: string, userData: User) {
+    return new Promise((resolve, reject) => {
+      // check uuid is valid or return error
+      if (!validateUuid(id)) {
+        const error: CustomError = { code: 400, message: `userId ${id} is invalid (not uuid)` }
+        reject(error);
+      };
+
+      // find user
+      const existingUser = users.find((user) => user.id === id);
+
+      //check user exist
+      if (!existingUser) {
+        // return an error
+        const error: CustomError = { code: 404, message: `User with id ${id} doesn't exist` };
+        reject(error);
+      }
+
+      //update requred fields all required fields
+      if (userData.username && typeof userData.username === 'string') {
+        existingUser!.username = userData.username;
+      };
+
+      if (userData.age && typeof userData.age === 'number') {
+        existingUser!.age = userData.age;
+      };
+
+      if (userData.hobbies && Array.isArray(userData.hobbies)) {
+        existingUser!.hobbies = userData.hobbies;
+      };
+
+      // return updated user
+      resolve(existingUser);
+    });
+  }
+
 }
 export { Controller };
